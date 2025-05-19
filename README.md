@@ -29,7 +29,7 @@ Deployment scripts for Core Testnet 2
 Testing framework to ensure reliability
 Environment configuration for secure deployment
 
-> Future Scope
+Future Scope
 
 The Supply Chain Verification system can be expanded in several ways:
 
