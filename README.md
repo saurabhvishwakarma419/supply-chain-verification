@@ -1,4 +1,6 @@
 Supply Chain Verification
+
+
 A blockchain-based solution for tracking and verifying products throughout the supply chain, ensuring authenticity and transparency.
 Project Description
 Supply Chain Verification is a decentralized application built on blockchain technology that allows manufacturers, distributors, retailers, and consumers to track and verify the authenticity of products as they move through the supply chain. By leveraging the immutable nature of blockchain, this solution provides an unalterable record of a product's journey from manufacturer to consumer, combating counterfeiting and ensuring product integrity.
@@ -27,7 +29,8 @@ Deployment scripts for Core Testnet 2
 Testing framework to ensure reliability
 Environment configuration for secure deployment
 
-Future Scope
+> Future Scope
+
 The Supply Chain Verification system can be expanded in several ways:
 
 QR Code Integration: Physical QR codes that link to the blockchain record for easy verification by consumers
@@ -70,5 +73,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 contract addres 0x607E59bA745B7710a8a4f074e028d92CD769b9FE
 
-![Screenshot (2)](https://github.com/user-attachments/assets/4f0269c4-c13f-4842-8b93-f20987465606)
+
+![Screenshot 2025-05-19 132736](https://github.com/user-attachments/assets/553be319-b87d-4a56-aea5-2dfc05092856)
+
 
