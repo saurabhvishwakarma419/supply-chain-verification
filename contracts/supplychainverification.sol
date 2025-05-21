@@ -17,49 +17,53 @@ contract SupplyChainVerification {
         mapping(address => bool) verifiers;
         uint256 verificationCount;
     }
-    
+
     // Mapping from product ID to Product
-    mapping(uint256 => Product) public products;
-    
+    mapping(uint256 => Product) private products;
+
     // Array to keep track of product IDs
-    uint256[] public productIds;
-    
+    uint256[] private productIds;
+
     // Authorized verifiers
     mapping(address => bool) public authorizedVerifiers;
-    
+
+    // Owner (deployer)
+    address public owner;
+
     // Events
     event ProductRegistered(uint256 indexed productId, string productName, address manufacturer, string batchNumber);
     event ProductVerified(uint256 indexed productId, address verifier);
     event VerifierAuthorized(address verifier);
     event VerifierRevoked(address verifier);
-    
+
     // Modifiers
     modifier onlyAuthorizedVerifier() {
         require(authorizedVerifiers[msg.sender], "Not an authorized verifier");
         _;
     }
-    
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can perform this action");
+        _;
+    }
+
     // Constructor
     constructor() {
+        owner = msg.sender;
         authorizedVerifiers[msg.sender] = true;
         emit VerifierAuthorized(msg.sender);
     }
-    
+
     /**
      * @dev Register a new product in the supply chain
-     * @param _productId Unique identifier for the product
-     * @param _productName Name of the product
-     * @param _batchNumber Batch number of the product
      */
     function registerProduct(
         uint256 _productId,
         string memory _productName,
         string memory _batchNumber
     ) external {
-        // Ensure product ID doesn't exist
         require(products[_productId].manufactureDate == 0, "Product already exists");
-        
-        // Create new product
+
         Product storage newProduct = products[_productId];
         newProduct.productId = _productId;
         newProduct.productName = _productName;
@@ -68,57 +72,109 @@ contract SupplyChainVerification {
         newProduct.batchNumber = _batchNumber;
         newProduct.isVerified = false;
         newProduct.verificationCount = 0;
-        
-        // Add product ID to the tracking array
+
         productIds.push(_productId);
-        
-        // Emit event
         emit ProductRegistered(_productId, _productName, msg.sender, _batchNumber);
     }
-    
+
     /**
-     * @dev Verify a product in the supply chain
-     * @param _productId ID of the product to verify
+     * @dev Verify a product
      */
     function verifyProduct(uint256 _productId) external onlyAuthorizedVerifier {
-        // Ensure product exists
         require(products[_productId].manufactureDate > 0, "Product does not exist");
-        
-        // Ensure verifier hasn't already verified this product
-        require(!products[_productId].verifiers[msg.sender], "Product already verified by this verifier");
-        
-        // Mark product as verified by this verifier
+        require(!products[_productId].verifiers[msg.sender], "Already verified");
+
         products[_productId].verifiers[msg.sender] = true;
         products[_productId].verificationCount++;
-        
-        // If verification count reaches 3, mark product as fully verified
+
         if (products[_productId].verificationCount >= 3) {
             products[_productId].isVerified = true;
         }
-        
-        // Emit event
+
         emit ProductVerified(_productId, msg.sender);
     }
-    
+
+    /**
+     * @dev Check if a product is verified
+     */
+    function checkProductVerification(uint256 _productId)
+        external
+        view
+        returns (bool isVerified, uint256 verificationCount)
+    {
+        require(products[_productId].manufactureDate > 0, "Product does not exist");
+        return (products[_productId].isVerified, products[_productId].verificationCount);
+    }
+
     /**
      * @dev Add a new authorized verifier
-     * @param _verifier Address of the verifier to authorize
      */
-    function authorizeVerifier(address _verifier) external onlyAuthorizedVerifier {
-        require(!authorizedVerifiers[_verifier], "Verifier already authorized");
+    function authorizeVerifier(address _verifier) external onlyOwner {
+        require(!authorizedVerifiers[_verifier], "Already authorized");
         authorizedVerifiers[_verifier] = true;
         emit VerifierAuthorized(_verifier);
     }
-    
+
     /**
-     * @dev Check if a product is verified
-     * @param _productId ID of the product to check
-     * @return isVerified Whether the product is verified
-     * @return verificationCount Number of verifications
+     * @dev Revoke verifier
      */
-    function checkProductVerification(uint256 _productId) external view 
-    returns (bool isVerified, uint256 verificationCount) {
-        require(products[_productId].manufactureDate > 0, "Product does not exist");
-        return (products[_productId].isVerified, products[_productId].verificationCount);
+    function revokeVerifier(address _verifier) external onlyOwner {
+        require(authorizedVerifiers[_verifier], "Verifier not authorized");
+        authorizedVerifiers[_verifier] = false;
+        emit VerifierRevoked(_verifier);
+    }
+
+    /**
+     * @dev Get the list of all product IDs
+     */
+    function getAllProductIds() external view returns (uint256[] memory) {
+        return productIds;
+    }
+
+    /**
+     * @dev Get product details (excluding mapping)
+     */
+    function getProductDetails(uint256 _productId)
+        external
+        view
+        returns (
+            string memory productName,
+            address manufacturer,
+            uint256 manufactureDate,
+            string memory batchNumber,
+            bool isVerified,
+            uint256 verificationCount
+        )
+    {
+        Product storage p = products[_productId];
+        require(p.manufactureDate > 0, "Product not found");
+
+        return (
+            p.productName,
+            p.manufacturer,
+            p.manufactureDate,
+            p.batchNumber,
+            p.isVerified,
+            p.verificationCount
+        );
+    }
+
+    /**
+     * @dev Check if a specific verifier has verified a product
+     */
+    function getProductVerifierStatus(uint256 _productId, address verifier)
+        external
+        view
+        returns (bool)
+    {
+        require(products[_productId].manufactureDate > 0, "Product not found");
+        return products[_productId].verifiers[verifier];
+    }
+
+    /**
+     * @dev Check if an address is an authorized verifier
+     */
+    function getVerifierStatus(address verifier) external view returns (bool) {
+        return authorizedVerifiers[verifier];
     }
 }
