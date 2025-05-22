@@ -12,6 +12,7 @@ contract SupplyChainVerification {
         string productName;
         address manufacturer;
         uint256 manufactureDate;
+        uint256 expiryDate;
         string batchNumber;
         bool isVerified;
         mapping(address => bool) verifiers;
@@ -35,6 +36,8 @@ contract SupplyChainVerification {
     event ProductVerified(uint256 indexed productId, address verifier);
     event VerifierAuthorized(address verifier);
     event VerifierRevoked(address verifier);
+    event BatchNumberUpdated(uint256 indexed productId, string newBatchNumber);
+    event ExpiryDateSet(uint256 indexed productId, uint256 expiryDate);
 
     // Modifiers
     modifier onlyAuthorizedVerifier() {
@@ -44,6 +47,11 @@ contract SupplyChainVerification {
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can perform this action");
+        _;
+    }
+
+    modifier onlyManufacturer(uint256 _productId) {
+        require(products[_productId].manufacturer == msg.sender, "Only manufacturer can perform this action");
         _;
     }
 
@@ -72,6 +80,7 @@ contract SupplyChainVerification {
         newProduct.batchNumber = _batchNumber;
         newProduct.isVerified = false;
         newProduct.verificationCount = 0;
+        newProduct.expiryDate = 0;
 
         productIds.push(_productId);
         emit ProductRegistered(_productId, _productName, msg.sender, _batchNumber);
@@ -141,6 +150,7 @@ contract SupplyChainVerification {
             string memory productName,
             address manufacturer,
             uint256 manufactureDate,
+            uint256 expiryDate,
             string memory batchNumber,
             bool isVerified,
             uint256 verificationCount
@@ -153,6 +163,7 @@ contract SupplyChainVerification {
             p.productName,
             p.manufacturer,
             p.manufactureDate,
+            p.expiryDate,
             p.batchNumber,
             p.isVerified,
             p.verificationCount
@@ -176,5 +187,69 @@ contract SupplyChainVerification {
      */
     function getVerifierStatus(address verifier) external view returns (bool) {
         return authorizedVerifiers[verifier];
+    }
+
+    /**
+     * @dev Update batch number (only by manufacturer)
+     */
+    function updateBatchNumber(uint256 _productId, string memory _newBatchNumber)
+        external
+        onlyManufacturer(_productId)
+    {
+        products[_productId].batchNumber = _newBatchNumber;
+        emit BatchNumberUpdated(_productId, _newBatchNumber);
+    }
+
+    /**
+     * @dev Set expiry date (only by manufacturer)
+     */
+    function setExpiryDate(uint256 _productId, uint256 _expiryTimestamp)
+        external
+        onlyManufacturer(_productId)
+    {
+        require(_expiryTimestamp > block.timestamp, "Expiry must be in the future");
+        products[_productId].expiryDate = _expiryTimestamp;
+        emit ExpiryDateSet(_productId, _expiryTimestamp);
+    }
+
+    /**
+     * @dev Check if product is expired
+     */
+    function isExpired(uint256 _productId) external view returns (bool) {
+        require(products[_productId].manufactureDate > 0, "Product not found");
+        uint256 expiry = products[_productId].expiryDate;
+        return expiry > 0 && block.timestamp > expiry;
+    }
+
+    /**
+     * @dev Get total verifier count for a product
+     */
+    function getVerifierCount(uint256 _productId) external view returns (uint256) {
+        require(products[_productId].manufactureDate > 0, "Product not found");
+        return products[_productId].verificationCount;
+    }
+
+    /**
+     * @dev Get product summary (for quick display)
+     */
+    function getProductSummary(uint256 _productId)
+        external
+        view
+        returns (
+            string memory name,
+            string memory batch,
+            bool verified,
+            bool expired
+        )
+    {
+        Product storage p = products[_productId];
+        require(p.manufactureDate > 0, "Product not found");
+
+        return (
+            p.productName,
+            p.batchNumber,
+            p.isVerified,
+            p.expiryDate > 0 && block.timestamp > p.expiryDate
+        );
     }
 }
