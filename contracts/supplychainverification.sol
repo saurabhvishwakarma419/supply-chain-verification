@@ -13,7 +13,7 @@ contract SupplyChainVerification {
         string productName;
         address manufacturer;
         uint256 manufactureDate;
-        uint256 expiryDate;
+        uint256 expiryDate
         string batchNumber;
         bool isVerified;
         mapping(address => bool) verifiers;
