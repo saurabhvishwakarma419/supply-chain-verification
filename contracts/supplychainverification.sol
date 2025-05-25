@@ -60,7 +60,8 @@ contract SupplyChainVerification {
     constructor() {
         owner = msg.sender;
         authorizedVerifiers[msg.sender] = true;
-        emit VerifierAuthorized(msg.sender);
+        emit VerifierAuthorized(msg.sender);\
+
     }
 
     /**
