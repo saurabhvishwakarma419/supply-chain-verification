@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 /**
  * @title SupplyChainVerification
- * @dev Smart contract for verifying products in a supply chain
+ * @dev Smart contract for verifying products in a upply chain
  */
 contract SupplyChainVerification {
     // Structure for Product data
@@ -89,7 +89,7 @@ contract SupplyChainVerification {
     }
 
     /**
-     * @dev Verify a product
+     * @dev Verify a produ
      */
     function verifyProduct(uint256 _productId) external onlyAuthorizedVerifier {
         require(products[_productId].manufactureDate > 0, "Product does not exist");
