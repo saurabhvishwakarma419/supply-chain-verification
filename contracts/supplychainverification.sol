@@ -9,7 +9,7 @@ pragma solidity ^0.8.19;
 contract SupplyChainVerification {
     // Structure for Product data
     struct Product {
-        uint256 productId;
+    
         string productName;
         address manufacturer;
         uint256 manufactureDate;
