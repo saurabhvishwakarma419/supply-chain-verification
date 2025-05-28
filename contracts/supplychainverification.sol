@@ -6,7 +6,7 @@ pragma solidity ^0.8.19;
  * @title SupplyChainVerification
  * @dev Smart contract for verifying products in a upply chain
  */
-contract SupplyChainVerification {
+contract SupplyChainVerification
     // Structure for Product data
     struct Product {
     
