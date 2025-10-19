@@ -3,77 +3,85 @@ pragma solidity ^0.8.0;
 
 /**
  * @title SupplyChainVerification
- * @dev Transparent and tamper-proof supply chain tracking system
- * @author Your Name
+ * @dev A transparent and secure supply chain tracking system
+ * @author Supply Chain Team
  */
 contract Project {
     
-    // Structure to represent a product in the supply chain
+    // Enum for product status at different stages
+    enum Status {
+        Manufactured,
+        InTransit,
+        AtDistributor,
+        Shipped,
+        AtRetailer,
+        Delivered
+    }
+    
+    // Structure to represent a product
     struct Product {
         uint productId;
-        string name;
-        string origin;
-        address manufacturer;
-        string currentStatus;
-        string currentLocation;
-        uint256 timestamp;
+        string productName;
+        string manufacturer;
+        Status currentStatus;
+        address currentOwner;
+        uint registrationTime;
         bool exists;
     }
     
-    // Structure to track product history
+    // Structure to track status history
     struct StatusUpdate {
-        string status;
+        Status status;
+        uint timestamp;
         string location;
         address updatedBy;
-        uint256 timestamp;
     }
     
     // State variables
-    address public owner;
+    address public admin;
     uint public totalProducts;
     
     // Mappings
     mapping(uint => Product) public products;
     mapping(uint => StatusUpdate[]) public productHistory;
-    mapping(address => bool) public authorizedHandlers;
-    mapping(address => bool) public manufacturers;
+    mapping(address => bool) public authorizedParticipants;
     
     // Events
     event ProductRegistered(
-        uint indexed productId,
-        string name,
-        string origin,
+        uint indexed productId, 
+        string productName, 
         address indexed manufacturer,
-        uint256 timestamp
+        uint timestamp
     );
     
-    event ProductStatusUpdated(
-        uint indexed productId,
-        string status,
-        string location,
-        address indexed updatedBy,
-        uint256 timestamp
+    event StatusUpdated(
+        uint indexed productId, 
+        Status newStatus, 
+        string location, 
+        uint timestamp,
+        address indexed updatedBy
     );
     
-    event ManufacturerAdded(address indexed manufacturer);
-    event HandlerAuthorized(address indexed handler);
-    event HandlerRevoked(address indexed handler);
+    event OwnershipTransferred(
+        uint indexed productId, 
+        address indexed from, 
+        address indexed to,
+        uint timestamp
+    );
+    
+    event ParticipantAuthorized(address indexed participant);
+    event ParticipantRevoked(address indexed participant);
     
     // Modifiers
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can perform this action");
-        _;
-    }
-    
-    modifier onlyManufacturer() {
-        require(manufacturers[msg.sender], "Only registered manufacturers can perform this action");
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can perform this action");
         _;
     }
     
     modifier onlyAuthorized() {
         require(
-            authorizedHandlers[msg.sender] || manufacturers[msg.sender] || msg.sender == owner,
-            "Not authorized to update product status"
+            authorizedParticipants[msg.sender] || msg.sender == admin, 
+            "Not authorized"
         );
         _;
     }
@@ -83,236 +91,243 @@ contract Project {
         _;
     }
     
+    modifier onlyProductOwner(uint _productId) {
+        require(
+            products[_productId].currentOwner == msg.sender,
+            "You are not the current owner"
+        );
+        _;
+    }
+    
     /**
-     * @dev Constructor sets the contract deployer as owner and first manufacturer
+     * @dev Constructor sets the contract deployer as admin
      */
     constructor() {
-        owner = msg.sender;
-        manufacturers[msg.sender] = true;
-        authorizedHandlers[msg.sender] = true;
+        admin = msg.sender;
+        authorizedParticipants[admin] = true;
         totalProducts = 0;
     }
     
     /**
      * @dev Register a new product in the supply chain
      * @param _productId Unique identifier for the product
-     * @param _name Name of the product
-     * @param _origin Origin/manufacturing location of the product
-     * @notice Only registered manufacturers can register products
+     * @param _productName Name of the product
+     * @param _manufacturer Name of the manufacturer
+     * @notice Only authorized participants can register products
      */
     function registerProduct(
         uint _productId,
-        string memory _name,
-        string memory _origin
-    ) public onlyManufacturer {
-        require(_productId > 0, "Product ID must be greater than 0");
+        string memory _productName,
+        string memory _manufacturer
+    ) public onlyAuthorized {
+        require(_productId > 0, "Invalid product ID");
         require(!products[_productId].exists, "Product already registered");
-        require(bytes(_name).length > 0, "Product name cannot be empty");
-        require(bytes(_origin).length > 0, "Origin cannot be empty");
+        require(bytes(_productName).length > 0, "Product name cannot be empty");
+        require(bytes(_manufacturer).length > 0, "Manufacturer cannot be empty");
         
         products[_productId] = Product({
             productId: _productId,
-            name: _name,
-            origin: _origin,
-            manufacturer: msg.sender,
-            currentStatus: "Manufactured",
-            currentLocation: _origin,
-            timestamp: block.timestamp,
+            productName: _productName,
+            manufacturer: _manufacturer,
+            currentStatus: Status.Manufactured,
+            currentOwner: msg.sender,
+            registrationTime: block.timestamp,
             exists: true
         });
         
         // Add initial status to history
         productHistory[_productId].push(StatusUpdate({
-            status: "Manufactured",
-            location: _origin,
-            updatedBy: msg.sender,
-            timestamp: block.timestamp
+            status: Status.Manufactured,
+            timestamp: block.timestamp,
+            location: "Manufacturing Facility",
+            updatedBy: msg.sender
         }));
         
         totalProducts++;
         
-        emit ProductRegistered(_productId, _name, _origin, msg.sender, block.timestamp);
+        emit ProductRegistered(_productId, _productName, msg.sender, block.timestamp);
     }
     
     /**
-     * @dev Update product status and location in the supply chain
+     * @dev Update the status of a product in the supply chain
      * @param _productId ID of the product to update
-     * @param _status New status of the product
+     * @param _newStatus New status of the product
      * @param _location Current location of the product
-     * @notice Only authorized handlers can update product status
+     * @notice Only authorized participants can update status
      */
-    function updateProductStatus(
+    function updateStatus(
         uint _productId,
-        string memory _status,
+        Status _newStatus,
         string memory _location
     ) public onlyAuthorized productExists(_productId) {
-        require(bytes(_status).length > 0, "Status cannot be empty");
         require(bytes(_location).length > 0, "Location cannot be empty");
+        require(
+            uint(_newStatus) > uint(products[_productId].currentStatus),
+            "Invalid status progression"
+        );
         
-        Product storage product = products[_productId];
-        product.currentStatus = _status;
-        product.currentLocation = _location;
-        product.timestamp = block.timestamp;
+        products[_productId].currentStatus = _newStatus;
         
         // Add to history
         productHistory[_productId].push(StatusUpdate({
-            status: _status,
+            status: _newStatus,
+            timestamp: block.timestamp,
             location: _location,
-            updatedBy: msg.sender,
-            timestamp: block.timestamp
+            updatedBy: msg.sender
         }));
         
-        emit ProductStatusUpdated(_productId, _status, _location, msg.sender, block.timestamp);
+        emit StatusUpdated(_productId, _newStatus, _location, block.timestamp, msg.sender);
     }
     
     /**
-     * @dev Verify and get complete product information
-     * @param _productId ID of the product to verify
-     * @return productId Product identifier
-     * @return name Product name
-     * @return origin Manufacturing origin
-     * @return manufacturer Manufacturer address
-     * @return currentStatus Current status
-     * @return currentLocation Current location
-     * @return timestamp Last update timestamp
+     * @dev Transfer ownership of a product to another party
+     * @param _productId ID of the product
+     * @param _newOwner Address of the new owner
+     * @notice Only current owner can transfer ownership
      */
-    function verifyProduct(uint _productId) 
-        public 
-        view 
-        productExists(_productId)
-        returns (
-            uint productId,
-            string memory name,
-            string memory origin,
-            address manufacturer,
-            string memory currentStatus,
-            string memory currentLocation,
-            uint256 timestamp
-        ) 
-    {
-        Product memory p = products[_productId];
-        return (
-            p.productId,
-            p.name,
-            p.origin,
-            p.manufacturer,
-            p.currentStatus,
-            p.currentLocation,
-            p.timestamp
+    function transferOwnership(
+        uint _productId,
+        address _newOwner
+    ) public productExists(_productId) onlyProductOwner(_productId) {
+        require(_newOwner != address(0), "Invalid new owner address");
+        require(_newOwner != msg.sender, "Cannot transfer to yourself");
+        require(
+            authorizedParticipants[_newOwner] || _newOwner == admin,
+            "New owner must be authorized"
         );
+        
+        address previousOwner = products[_productId].currentOwner;
+        products[_productId].currentOwner = _newOwner;
+        
+        emit OwnershipTransferred(_productId, previousOwner, _newOwner, block.timestamp);
     }
     
     /**
-     * @dev Get complete history of a product
-     * @param _productId ID of the product
-     * @return history Array of all status updates
+     * @dev Authorize a participant to interact with the supply chain
+     * @param _participant Address to authorize
+     * @notice Only admin can authorize participants
      */
-    function getProductHistory(uint _productId) 
-        public 
-        view 
-        productExists(_productId)
-        returns (StatusUpdate[] memory history) 
-    {
-        return productHistory[_productId];
+    function authorizeParticipant(address _participant) public onlyAdmin {
+        require(_participant != address(0), "Invalid address");
+        require(!authorizedParticipants[_participant], "Already authorized");
+        
+        authorizedParticipants[_participant] = true;
+        emit ParticipantAuthorized(_participant);
     }
     
     /**
-     * @dev Get product details
+     * @dev Revoke authorization from a participant
+     * @param _participant Address to revoke
+     * @notice Only admin can revoke authorization
+     */
+    function revokeParticipant(address _participant) public onlyAdmin {
+        require(_participant != address(0), "Invalid address");
+        require(_participant != admin, "Cannot revoke admin");
+        require(authorizedParticipants[_participant], "Not authorized");
+        
+        authorizedParticipants[_participant] = false;
+        emit ParticipantRevoked(_participant);
+    }
+    
+    /**
+     * @dev Get complete product information
      * @param _productId ID of the product
-     * @return product Complete product information
+     * @return Product structure with all details
      */
     function getProduct(uint _productId) 
         public 
         view 
-        productExists(_productId)
-        returns (Product memory product) 
+        productExists(_productId) 
+        returns (Product memory) 
     {
         return products[_productId];
     }
     
     /**
-     * @dev Add a new manufacturer
-     * @param _manufacturer Address of the manufacturer to add
-     * @notice Only owner can add manufacturers
-     */
-    function addManufacturer(address _manufacturer) public onlyOwner {
-        require(_manufacturer != address(0), "Invalid manufacturer address");
-        require(!manufacturers[_manufacturer], "Manufacturer already registered");
-        
-        manufacturers[_manufacturer] = true;
-        emit ManufacturerAdded(_manufacturer);
-    }
-    
-    /**
-     * @dev Add an authorized handler (distributor, retailer, etc.)
-     * @param _handler Address of the handler to authorize
-     * @notice Only owner can authorize handlers
-     */
-    function addAuthorizedHandler(address _handler) public onlyOwner {
-        require(_handler != address(0), "Invalid handler address");
-        require(!authorizedHandlers[_handler], "Handler already authorized");
-        
-        authorizedHandlers[_handler] = true;
-        emit HandlerAuthorized(_handler);
-    }
-    
-    /**
-     * @dev Remove an authorized handler
-     * @param _handler Address of the handler to revoke
-     * @notice Only owner can revoke handlers
-     */
-    function revokeHandler(address _handler) public onlyOwner {
-        require(authorizedHandlers[_handler], "Handler is not authorized");
-        
-        authorizedHandlers[_handler] = false;
-        emit HandlerRevoked(_handler);
-    }
-    
-    /**
-     * @dev Check if a product is registered
+     * @dev Get current status of a product
      * @param _productId ID of the product
-     * @return exists True if product exists, false otherwise
+     * @return Current status enum value
      */
-    function isProductRegistered(uint _productId) public view returns (bool exists) {
-        return products[_productId].exists;
+    function getProductStatus(uint _productId) 
+        public 
+        view 
+        productExists(_productId) 
+        returns (Status) 
+    {
+        return products[_productId].currentStatus;
+    }
+    
+    /**
+     * @dev Get current owner of a product
+     * @param _productId ID of the product
+     * @return Address of current owner
+     */
+    function getCurrentOwner(uint _productId) 
+        public 
+        view 
+        productExists(_productId) 
+        returns (address) 
+    {
+        return products[_productId].currentOwner;
+    }
+    
+    /**
+     * @dev Get complete history of a product
+     * @param _productId ID of the product
+     * @return Array of StatusUpdate structures
+     */
+    function getProductHistory(uint _productId) 
+        public 
+        view 
+        productExists(_productId) 
+        returns (StatusUpdate[] memory) 
+    {
+        return productHistory[_productId];
+    }
+    
+    /**
+     * @dev Verify if a product exists and get basic info
+     * @param _productId ID of the product
+     * @return exists Whether product exists
+     * @return productName Name of the product
+     * @return currentStatus Current status of the product
+     */
+    function verifyProduct(uint _productId) 
+        public 
+        view 
+        returns (bool exists, string memory productName, Status currentStatus) 
+    {
+        Product memory product = products[_productId];
+        return (product.exists, product.productName, product.currentStatus);
+    }
+    
+    /**
+     * @dev Check if an address is authorized
+     * @param _participant Address to check
+     * @return True if authorized, false otherwise
+     */
+    function isAuthorized(address _participant) public view returns (bool) {
+        return authorizedParticipants[_participant];
     }
     
     /**
      * @dev Get total number of registered products
-     * @return count Total product count
+     * @return Total product count
      */
-    function getTotalProducts() public view returns (uint count) {
+    function getTotalProducts() public view returns (uint) {
         return totalProducts;
     }
     
     /**
-     * @dev Check if an address is an authorized manufacturer
-     * @param _address Address to check
-     * @return authorized True if authorized, false otherwise
-     */
-    function isManufacturer(address _address) public view returns (bool authorized) {
-        return manufacturers[_address];
-    }
-    
-    /**
-     * @dev Check if an address is an authorized handler
-     * @param _address Address to check
-     * @return authorized True if authorized, false otherwise
-     */
-    function isAuthorizedHandler(address _address) public view returns (bool authorized) {
-        return authorizedHandlers[_address];
-    }
-    
-    /**
-     * @dev Get the number of status updates for a product
+     * @dev Get status history count for a product
      * @param _productId ID of the product
-     * @return count Number of status updates
+     * @return Number of status updates
      */
-    function getStatusUpdateCount(uint _productId) 
+    function getHistoryCount(uint _productId) 
         public 
         view 
-        productExists(_productId)
-        returns (uint count) 
+        productExists(_productId) 
+        returns (uint) 
     {
         return productHistory[_productId].length;
     }
