@@ -1,1 +1,320 @@
 
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+/**
+ * @title SupplyChainVerification
+ * @dev Transparent and tamper-proof supply chain tracking system
+ * @author Your Name
+ */
+contract Project {
+    
+    // Structure to represent a product in the supply chain
+    struct Product {
+        uint productId;
+        string name;
+        string origin;
+        address manufacturer;
+        string currentStatus;
+        string currentLocation;
+        uint256 timestamp;
+        bool exists;
+    }
+    
+    // Structure to track product history
+    struct StatusUpdate {
+        string status;
+        string location;
+        address updatedBy;
+        uint256 timestamp;
+    }
+    
+    // State variables
+    address public owner;
+    uint public totalProducts;
+    
+    // Mappings
+    mapping(uint => Product) public products;
+    mapping(uint => StatusUpdate[]) public productHistory;
+    mapping(address => bool) public authorizedHandlers;
+    mapping(address => bool) public manufacturers;
+    
+    // Events
+    event ProductRegistered(
+        uint indexed productId,
+        string name,
+        string origin,
+        address indexed manufacturer,
+        uint256 timestamp
+    );
+    
+    event ProductStatusUpdated(
+        uint indexed productId,
+        string status,
+        string location,
+        address indexed updatedBy,
+        uint256 timestamp
+    );
+    
+    event ManufacturerAdded(address indexed manufacturer);
+    event HandlerAuthorized(address indexed handler);
+    event HandlerRevoked(address indexed handler);
+    
+    // Modifiers
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can perform this action");
+        _;
+    }
+    
+    modifier onlyManufacturer() {
+        require(manufacturers[msg.sender], "Only registered manufacturers can perform this action");
+        _;
+    }
+    
+    modifier onlyAuthorized() {
+        require(
+            authorizedHandlers[msg.sender] || manufacturers[msg.sender] || msg.sender == owner,
+            "Not authorized to update product status"
+        );
+        _;
+    }
+    
+    modifier productExists(uint _productId) {
+        require(products[_productId].exists, "Product does not exist");
+        _;
+    }
+    
+    /**
+     * @dev Constructor sets the contract deployer as owner and first manufacturer
+     */
+    constructor() {
+        owner = msg.sender;
+        manufacturers[msg.sender] = true;
+        authorizedHandlers[msg.sender] = true;
+        totalProducts = 0;
+    }
+    
+    /**
+     * @dev Register a new product in the supply chain
+     * @param _productId Unique identifier for the product
+     * @param _name Name of the product
+     * @param _origin Origin/manufacturing location of the product
+     * @notice Only registered manufacturers can register products
+     */
+    function registerProduct(
+        uint _productId,
+        string memory _name,
+        string memory _origin
+    ) public onlyManufacturer {
+        require(_productId > 0, "Product ID must be greater than 0");
+        require(!products[_productId].exists, "Product already registered");
+        require(bytes(_name).length > 0, "Product name cannot be empty");
+        require(bytes(_origin).length > 0, "Origin cannot be empty");
+        
+        products[_productId] = Product({
+            productId: _productId,
+            name: _name,
+            origin: _origin,
+            manufacturer: msg.sender,
+            currentStatus: "Manufactured",
+            currentLocation: _origin,
+            timestamp: block.timestamp,
+            exists: true
+        });
+        
+        // Add initial status to history
+        productHistory[_productId].push(StatusUpdate({
+            status: "Manufactured",
+            location: _origin,
+            updatedBy: msg.sender,
+            timestamp: block.timestamp
+        }));
+        
+        totalProducts++;
+        
+        emit ProductRegistered(_productId, _name, _origin, msg.sender, block.timestamp);
+    }
+    
+    /**
+     * @dev Update product status and location in the supply chain
+     * @param _productId ID of the product to update
+     * @param _status New status of the product
+     * @param _location Current location of the product
+     * @notice Only authorized handlers can update product status
+     */
+    function updateProductStatus(
+        uint _productId,
+        string memory _status,
+        string memory _location
+    ) public onlyAuthorized productExists(_productId) {
+        require(bytes(_status).length > 0, "Status cannot be empty");
+        require(bytes(_location).length > 0, "Location cannot be empty");
+        
+        Product storage product = products[_productId];
+        product.currentStatus = _status;
+        product.currentLocation = _location;
+        product.timestamp = block.timestamp;
+        
+        // Add to history
+        productHistory[_productId].push(StatusUpdate({
+            status: _status,
+            location: _location,
+            updatedBy: msg.sender,
+            timestamp: block.timestamp
+        }));
+        
+        emit ProductStatusUpdated(_productId, _status, _location, msg.sender, block.timestamp);
+    }
+    
+    /**
+     * @dev Verify and get complete product information
+     * @param _productId ID of the product to verify
+     * @return productId Product identifier
+     * @return name Product name
+     * @return origin Manufacturing origin
+     * @return manufacturer Manufacturer address
+     * @return currentStatus Current status
+     * @return currentLocation Current location
+     * @return timestamp Last update timestamp
+     */
+    function verifyProduct(uint _productId) 
+        public 
+        view 
+        productExists(_productId)
+        returns (
+            uint productId,
+            string memory name,
+            string memory origin,
+            address manufacturer,
+            string memory currentStatus,
+            string memory currentLocation,
+            uint256 timestamp
+        ) 
+    {
+        Product memory p = products[_productId];
+        return (
+            p.productId,
+            p.name,
+            p.origin,
+            p.manufacturer,
+            p.currentStatus,
+            p.currentLocation,
+            p.timestamp
+        );
+    }
+    
+    /**
+     * @dev Get complete history of a product
+     * @param _productId ID of the product
+     * @return history Array of all status updates
+     */
+    function getProductHistory(uint _productId) 
+        public 
+        view 
+        productExists(_productId)
+        returns (StatusUpdate[] memory history) 
+    {
+        return productHistory[_productId];
+    }
+    
+    /**
+     * @dev Get product details
+     * @param _productId ID of the product
+     * @return product Complete product information
+     */
+    function getProduct(uint _productId) 
+        public 
+        view 
+        productExists(_productId)
+        returns (Product memory product) 
+    {
+        return products[_productId];
+    }
+    
+    /**
+     * @dev Add a new manufacturer
+     * @param _manufacturer Address of the manufacturer to add
+     * @notice Only owner can add manufacturers
+     */
+    function addManufacturer(address _manufacturer) public onlyOwner {
+        require(_manufacturer != address(0), "Invalid manufacturer address");
+        require(!manufacturers[_manufacturer], "Manufacturer already registered");
+        
+        manufacturers[_manufacturer] = true;
+        emit ManufacturerAdded(_manufacturer);
+    }
+    
+    /**
+     * @dev Add an authorized handler (distributor, retailer, etc.)
+     * @param _handler Address of the handler to authorize
+     * @notice Only owner can authorize handlers
+     */
+    function addAuthorizedHandler(address _handler) public onlyOwner {
+        require(_handler != address(0), "Invalid handler address");
+        require(!authorizedHandlers[_handler], "Handler already authorized");
+        
+        authorizedHandlers[_handler] = true;
+        emit HandlerAuthorized(_handler);
+    }
+    
+    /**
+     * @dev Remove an authorized handler
+     * @param _handler Address of the handler to revoke
+     * @notice Only owner can revoke handlers
+     */
+    function revokeHandler(address _handler) public onlyOwner {
+        require(authorizedHandlers[_handler], "Handler is not authorized");
+        
+        authorizedHandlers[_handler] = false;
+        emit HandlerRevoked(_handler);
+    }
+    
+    /**
+     * @dev Check if a product is registered
+     * @param _productId ID of the product
+     * @return exists True if product exists, false otherwise
+     */
+    function isProductRegistered(uint _productId) public view returns (bool exists) {
+        return products[_productId].exists;
+    }
+    
+    /**
+     * @dev Get total number of registered products
+     * @return count Total product count
+     */
+    function getTotalProducts() public view returns (uint count) {
+        return totalProducts;
+    }
+    
+    /**
+     * @dev Check if an address is an authorized manufacturer
+     * @param _address Address to check
+     * @return authorized True if authorized, false otherwise
+     */
+    function isManufacturer(address _address) public view returns (bool authorized) {
+        return manufacturers[_address];
+    }
+    
+    /**
+     * @dev Check if an address is an authorized handler
+     * @param _address Address to check
+     * @return authorized True if authorized, false otherwise
+     */
+    function isAuthorizedHandler(address _address) public view returns (bool authorized) {
+        return authorizedHandlers[_address];
+    }
+    
+    /**
+     * @dev Get the number of status updates for a product
+     * @param _productId ID of the product
+     * @return count Number of status updates
+     */
+    function getStatusUpdateCount(uint _productId) 
+        public 
+        view 
+        productExists(_productId)
+        returns (uint count) 
+    {
+        return productHistory[_productId].length;
+    }
+}
