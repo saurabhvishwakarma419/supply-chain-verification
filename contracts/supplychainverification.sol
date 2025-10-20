@@ -3,7 +3,8 @@ pragma solidity ^0.8.19;
 
 /**
  * @title SupplyChainVerification
- * @dev Smart contract for verifying products in a supply chain
+ * @dev Smart contract for verifying products in a
+supply chain
  */
 contract SupplyChainVerification {
     // Owner (deployer)
@@ -254,6 +255,7 @@ contract SupplyChainVerification {
         return authorizedVerifiers[verifier];
     }
 }
+
 
 
 
