@@ -4,7 +4,8 @@ async function main() {
   console.log("Starting deployment of SupplyChainVerification contract...");
 
   // Get the contract factory
-  const SupplyChainVerification = await ethers.getContractFactory("SupplyChainVerification");
+  const SupplyChainVerification = await et
+    hers.getContractFactory("SupplyChainVerification");
   
   // Deploy the contract
   const supplyChain = await SupplyChainVerification.deploy();
@@ -43,5 +44,6 @@ main()
     console.error(error);
     process.exit(1);
   });
+
 
 
