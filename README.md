@@ -1,5 +1,4 @@
-Supply Chain Verification
-
+𝗦𝘂𝗽𝗽𝗹𝘆 𝗖𝗵𝗮𝗶𝗻 𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻
 
 A blockchain-based solution for tracking and verifying products throughout the supply chain, ensuring authenticity and transparency.
 Project Description
@@ -13,7 +12,7 @@ Providing end-to-end visibility of product movement
 Enhancing trust between suppliers, retailers, and consumers
 Supporting ethical and sustainable sourcing practices
 
-Key Features
+𝗞𝗲𝘆 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀
 
 Product Registration: Manufacturers can register new products on the blockchain with detailed information
 Ownership Transfer: Secure transfer of product ownership between supply chain participants
@@ -29,7 +28,7 @@ Deployment scripts for Core Testnet 2
 Testing framework to ensure reliability
 Environment configuration for secure deployment
 
-Future Scope
+𝗙𝘂𝘁𝘂𝗿𝗲 𝗦𝗰𝗼𝗽𝗲
 
 The Supply Chain Verification system can be expanded in several ways:
 
