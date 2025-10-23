@@ -1,3 +1,4 @@
+
 𝗦𝘂𝗽𝗽𝗹𝘆 𝗖𝗵𝗮𝗶𝗻 𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻
 
 A blockchain-based solution for tracking and verifying products throughout the supply chain, ensuring authenticity and transparency.
