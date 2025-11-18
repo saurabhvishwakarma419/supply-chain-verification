@@ -40,36 +40,6 @@ Multi-Chain Support: Expand to operate across multiple blockchain networks for g
 Mobile Application: Develop a consumer-facing mobile app for product verification and history tracking
 Integration with ERP Systems: Connect with existing enterprise systems for seamless business operations
 
-Getting Started
-Prerequisites
-
-Node.js v14+ and npm
-MetaMask or similar Ethereum wallet
-
-Installation
-
-Clone the repository
-git clone https://github.com/yourusername/supply-chain-verification.git
-cd supply-chain-verification
-
-Install dependencies
-npm install
-
-Configure environment variables
-cp .env.example .env
-# Edit .env with your Core Testnet 2 private key
-
-Compile contracts
-npm run compile
-
-Deploy to Core Testnet 2
-npm run deploy
-
-
-License
-
-This project is licensed under the MIT License - see the LICENSE file for details
-
 contract addres 0x607E59bA745B7710a8a4f074e028d92CD769b9FE
 
 
