@@ -1,4 +1,3 @@
-
 const { ethers } = require("hardhat");
 async function main() {
   console.log("Starting deployment of SupplyChainVerification contract...");
@@ -44,6 +43,7 @@ main()
     console.error(error);
     process.exit(1);
   });
+
 
 
 
