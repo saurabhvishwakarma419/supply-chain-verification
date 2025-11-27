@@ -1,1 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Verification System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <h1>Supply Chain Verification</h1>
+            </div>
+            <p class="header-subtitle">Track and verify your shipments in real-time</p>
+        </header>
 
+        <!-- Search Section -->
+        <div class="search-card">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="trackingInput" 
+                    placeholder="Enter Tracking ID (e.g., SC001, SC002)"
+                    class="search-input"
+                >
+                <button id="searchBtn" class="search-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <span id="btnText">Track</span>
+                </button>
+            </div>
+            <p class="search-hint">Try: SC001 or SC002</p>
+        </div>
+
+        <!-- Results Container -->
+        <div id="resultsContainer"></div>
+
+        <!-- Not Found Message -->
+        <div id="notFoundMsg" class="not-found hidden">
+            <svg class="not-found-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <h3>Shipment Not Found</h3>
+            <p id="notFoundText"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
