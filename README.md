@@ -1,13 +1,13 @@
 <div align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=10&color=667EEA&center=true&vCenter=true&width=940&lines=Welcome+to+supply+chain+verification+Backend🌱" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=10&color=667EEA&center=true&vCenter=true&width=940&lines=Welcome+to+supply+chain+verification" alt="Typing SVG" />
 </div>
 
 # 𝗦𝘂𝗽𝗽𝗹𝘆 𝗖𝗵𝗮𝗶𝗻 𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻
 
 A blockchain-based solution for tracking and verifying products throughout the supply chain, ensuring authenticity and transparency.
-Project Description
+## Project Description
 Supply Chain Verification is a decentralized application built on blockchain technology that allows manufacturers, distributors, retailers, and consumers to track and verify the authenticity of products as they move through the supply chain. By leveraging the immutable nature of blockchain, this solution provides an unalterable record of a product's journey from manufacturer to consumer, combating counterfeiting and ensuring product integrity.
-Project Vision
+## Project Vision
 In today's global marketplace, consumers and businesses alike face challenges in verifying the authenticity and origin of products. Our vision is to create a transparent, tamper-proof system that enables all participants in the supply chain to access reliable information about products, building trust and accountability throughout the entire supply chain ecosystem.
 This project aims to revolutionize how supply chains operate by:
 
@@ -16,15 +16,15 @@ Providing end-to-end visibility of product movement
 Enhancing trust between suppliers, retailers, and consumers
 Supporting ethical and sustainable sourcing practices
 
-𝗞𝗲𝘆 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀
+## 𝗞𝗲𝘆 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀
 
-Product Registration: Manufacturers can register new products on the blockchain with detailed information
+### Product Registration : Manufacturers can register new products on the blockchain with detailed information
 Ownership Transfer: Secure transfer of product ownership between supply chain participants
 Authenticity Verification: Consumers and retailers can verify product authenticity and ownership history
 Immutable History: Complete and tamper-proof record of each product's journey through the supply chain
 Core Testnet 2 Integration: Full compatibility with Core Testnet 2 blockchain network for testing and deployment
 
-Technical Implementation
+### Technical Implementation
 The project uses Hardhat development environment with Solidity smart contracts. The implementation includes:
 
 Smart contracts for product registration, transfer, and verification
@@ -32,7 +32,7 @@ Deployment scripts for Core Testnet 2
 Testing framework to ensure reliability
 Environment configuration for secure deployment
 
-𝗙𝘂𝘁𝘂𝗿𝗲 𝗦𝗰𝗼𝗽𝗲
+## 𝗙𝘂𝘁𝘂𝗿𝗲 𝗦𝗰𝗼𝗽𝗲
 
 The Supply Chain Verification system can be expanded in several ways:
 
@@ -44,7 +44,7 @@ Multi-Chain Support: Expand to operate across multiple blockchain networks for g
 Mobile Application: Develop a consumer-facing mobile app for product verification and history tracking
 Integration with ERP Systems: Connect with existing enterprise systems for seamless business operations
 
-contract addres 0x607E59bA745B7710a8a4f074e028d92CD769b9FE
+## contract addres 0x607E59bA745B7710a8a4f074e028d92CD769b9FE
 
 
 ![Screenshot 2025-05-19 132736](https://github.com/user-attachments/assets/553be319-b87d-4a56-aea5-2dfc05092856)
