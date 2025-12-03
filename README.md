@@ -1,5 +1,8 @@
+<div align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=10&color=667EEA&center=true&vCenter=true&width=940&lines=Welcome+to+supply+chain+verification+Backend🌱" alt="Typing SVG" />
+</div>
 
-𝗦𝘂𝗽𝗽𝗹𝘆 𝗖𝗵𝗮𝗶𝗻 𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻
+# 𝗦𝘂𝗽𝗽𝗹𝘆 𝗖𝗵𝗮𝗶𝗻 𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻
 
 A blockchain-based solution for tracking and verifying products throughout the supply chain, ensuring authenticity and transparency.
 Project Description
