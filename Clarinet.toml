@@ -1,13 +1,12 @@
-
 [project]
 name = 'project6'
 description = ''
-authors = []
+authors = [saurabhvishwakarma]
 telemetry = true
 cache_dir = './.cache'
 requirements = []
-[contracts.Blockchain-based-Certificate-Issuance]
-path = 'contracts/Blockchain-based-Certificate-Issuance.clar'
+[contracts.supply-chain-verification]
+path = 'contracts supply-chain-verification.clar'
 clarity_version = 3
 epoch = 3.1
 [repl.analysis]
